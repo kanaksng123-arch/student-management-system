@@ -10,3 +10,4 @@ This is a Java-based project that allows users to:
 ## Technologies Used
 - Java
 - ArrayList
+- OOPS
