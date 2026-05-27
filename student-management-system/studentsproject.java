@@ -26,18 +26,16 @@ class Student {
     }
 }
 
-public class StudentManagementSystem {
+public class studentsproject {
 
     static ArrayList<Student> studentList = new ArrayList<>();
     static Scanner sc = new Scanner(System.in);
     static final String FILE_NAME = "students.txt";
 
-    // ─── File Handling ───────────────────────────────────────────────────────────
-
-    // Reads student data from file into studentList when program starts
+   
     static void loadFromFile() {
         File file = new File(FILE_NAME);
-        if (!file.exists()) return; // No file yet — first run, skip loading
+        if (!file.exists()) return; 
 
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
@@ -56,7 +54,7 @@ public class StudentManagementSystem {
         }
     }
 
-    // Writes entire studentList to file after every add/update/delete
+    
     static void saveToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
             for (Student s : studentList) {
@@ -79,7 +77,7 @@ public class StudentManagementSystem {
 
         System.out.print("Enter roll no: ");
         int rollNo = sc.nextInt();
-        sc.nextLine(); // clears the leftover \n after nextInt()
+        sc.nextLine(); 
 
         // Duplicate roll number check
         for (Student s : studentList) {
@@ -90,7 +88,7 @@ public class StudentManagementSystem {
         }
 
         studentList.add(new Student(name, branch, rollNo));
-        saveToFile(); // persist immediately after adding
+        saveToFile(); 
         System.out.println("Student added successfully!");
     }
 
@@ -129,14 +127,14 @@ public class StudentManagementSystem {
 
         System.out.print("Enter roll no to delete: ");
         int roll = sc.nextInt();
-        sc.nextLine(); // clears the leftover \n
+        sc.nextLine(); 
 
         for (int i = 0; i < studentList.size(); i++) {
             if (studentList.get(i).getRollNo() == roll) {
                 System.out.println("Deleting student:");
                 studentList.get(i).display();
                 studentList.remove(i);
-                saveToFile(); // persist immediately after deleting
+                saveToFile(); 
                 System.out.println("Student deleted successfully!");
                 return;
             }
@@ -152,7 +150,7 @@ public class StudentManagementSystem {
 
         System.out.print("Enter roll no to update: ");
         int roll = sc.nextInt();
-        sc.nextLine(); // clears the leftover \n
+        sc.nextLine(); 
 
         for (int i = 0; i < studentList.size(); i++) {
             if (studentList.get(i).getRollNo() == roll) {
@@ -166,7 +164,7 @@ public class StudentManagementSystem {
                 System.out.print("Enter choice: ");
 
                 int choice = sc.nextInt();
-                sc.nextLine(); // clears the leftover \n
+                sc.nextLine(); 
 
                 switch (choice) {
                     case 1:
@@ -188,7 +186,7 @@ public class StudentManagementSystem {
                         return;
                 }
 
-                saveToFile(); // persist immediately after updating
+                saveToFile(); 
                 System.out.println("Student updated successfully!");
                 studentList.get(i).display();
                 return;
@@ -216,7 +214,7 @@ public class StudentManagementSystem {
             System.out.print("Enter your choice: ");
 
             choice = sc.nextInt();
-            sc.nextLine(); // clears the leftover \n
+            sc.nextLine(); 
 
             switch (choice) {
                 case 1: addStudent();   break;
