@@ -1,219 +1,235 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.*;
 
-class Student {  
-    String branch;
-    String name;
-    int rollno;
+class Student {
+    private String name;
+    private String branch;
+    private int rollNo;
 
-    Student(String branch, String name, int rollno) {
-        this.branch = branch;
+    Student(String name, String branch, int rollNo) {
         this.name = name;
-        this.rollno = rollno;
+        this.branch = branch;
+        this.rollNo = rollNo;
     }
 
-    void display() {
-        System.out.println(name + " | " + branch + " | " + rollno);
+    
+    public String getName()   { return name; }
+    public String getBranch() { return branch; }
+    public int getRollNo()    { return rollNo; }
+
+    public void setName(String name)     { this.name = name; }
+    public void setBranch(String branch) { this.branch = branch; }
+
+    public void display() {
+        System.out.println("Name: " + name + " | Branch: " + branch + " | Roll No: " + rollNo);
     }
 }
 
-public class studentsproject {
+public class StudentManagementSystem {
 
-    static ArrayList<Student> arr = new ArrayList<>();
+    static ArrayList<Student> studentList = new ArrayList<>();
     static Scanner sc = new Scanner(System.in);
+    static final String FILE_NAME = "students.txt";
 
-    // Add student
+    // ─── File Handling ───────────────────────────────────────────────────────────
+
+    // Reads student data from file into studentList when program starts
+    static void loadFromFile() {
+        File file = new File(FILE_NAME);
+        if (!file.exists()) return; // No file yet — first run, skip loading
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 3) {
+                    String name   = parts[0];
+                    String branch = parts[1];
+                    int rollNo    = Integer.parseInt(parts[2].trim());
+                    studentList.add(new Student(name, branch, rollNo));
+                }
+            }
+            System.out.println(studentList.size() + " student record(s) loaded from file.");
+        } catch (IOException e) {
+            System.out.println("Error loading data: " + e.getMessage());
+        }
+    }
+
+    // Writes entire studentList to file after every add/update/delete
+    static void saveToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
+            for (Student s : studentList) {
+                writer.write(s.getName() + "," + s.getBranch() + "," + s.getRollNo());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving data: " + e.getMessage());
+        }
+    }
+
+    // ─── CRUD Operations ─────────────────────────────────────────────────────────
+
     static void addStudent() {
-        System.out.print("Enter name of student: ");
+        System.out.print("Enter name: ");
         String name = sc.nextLine();
 
-        System.out.print("Enter branch of student: ");
+        System.out.print("Enter branch: ");
         String branch = sc.nextLine();
 
-        System.out.print("Enter the roll no: ");
-        int rollno = sc.nextInt();
-        sc.nextLine(); // clear buffer
-        sc.nextLine(); // EXTRA: Ensure clean buffer before returning
+        System.out.print("Enter roll no: ");
+        int rollNo = sc.nextInt();
+        sc.nextLine(); // clears the leftover \n after nextInt()
 
-        // Prevent duplicate roll numbers
-        for (Student s : arr) {
-            if (s.rollno == rollno) {
+        // Duplicate roll number check
+        for (Student s : studentList) {
+            if (s.getRollNo() == rollNo) {
                 System.out.println("Roll number already exists!");
                 return;
             }
         }
 
-        arr.add(new Student(branch, name, rollno));
+        studentList.add(new Student(name, branch, rollNo));
+        saveToFile(); // persist immediately after adding
         System.out.println("Student added successfully!");
     }
 
-    // View students
-    static void viewStudent() {
-        if (arr.size() == 0) {
-            System.out.println("The list is empty.");
+    static void viewStudents() {
+        if (studentList.isEmpty()) {
+            System.out.println("No students to display.");
             return;
         }
-
-        for (int i = 0; i < arr.size(); i++) {
+        System.out.println("--- Student List ---");
+        for (int i = 0; i < studentList.size(); i++) {
             System.out.print((i + 1) + ". ");
-            arr.get(i).display();
+            studentList.get(i).display();
         }
     }
 
-    // Search student
     static void searchStudent() {
-        System.out.print("Enter the roll no: ");
+        System.out.print("Enter roll no to search: ");
         int roll = sc.nextInt();
-        sc.nextLine(); // clear buffer
-        sc.nextLine(); // EXTRA: Clean buffer
+        sc.nextLine(); // clears the leftover \n
 
-        boolean found = false;
-
-        for (int i = 0; i < arr.size(); i++) {
-            if (arr.get(i).rollno == roll) {
-                System.out.println("Student found at position " + (i + 1));
-                arr.get(i).display();
-                System.out.println("Students checked before finding: " + (i + 1));
-                found = true;
-                break;
+        for (int i = 0; i < studentList.size(); i++) {
+            if (studentList.get(i).getRollNo() == roll) {
+                System.out.println("Student found at position " + (i + 1) + ":");
+                studentList.get(i).display();
+                return;
             }
         }
-
-        if (!found) {
-            System.out.println("Student not found");
-            System.out.println("Total students checked: " + arr.size());
-        }
+        System.out.println("Student not found.");
     }
 
-    // Delete student
     static void deleteStudent() {
-        if (arr.size() == 0) {
+        if (studentList.isEmpty()) {
             System.out.println("No students available.");
             return;
         }
 
-        System.out.print("Enter the roll no: ");
+        System.out.print("Enter roll no to delete: ");
         int roll = sc.nextInt();
-        sc.nextLine(); // clear buffer
-        sc.nextLine(); // EXTRA: Clean buffer
+        sc.nextLine(); // clears the leftover \n
 
-        boolean found = false;
-
-        for (int i = 0; i < arr.size(); i++) {
-            if (arr.get(i).rollno == roll) {
-                System.out.println("Student found at position " + (i + 1));
-                arr.get(i).display();
-                arr.remove(i);
+        for (int i = 0; i < studentList.size(); i++) {
+            if (studentList.get(i).getRollNo() == roll) {
+                System.out.println("Deleting student:");
+                studentList.get(i).display();
+                studentList.remove(i);
+                saveToFile(); // persist immediately after deleting
                 System.out.println("Student deleted successfully!");
-                found = true;
-                break;
+                return;
             }
         }
-
-        if (!found) {
-            System.out.println("Student not found");
-        }
+        System.out.println("Student not found.");
     }
 
-    // Update student
     static void updateStudent() {
-        if (arr.size() == 0) {
+        if (studentList.isEmpty()) {
             System.out.println("No students available.");
             return;
         }
 
-        System.out.print("Enter the roll no: ");
+        System.out.print("Enter roll no to update: ");
         int roll = sc.nextInt();
-        sc.nextLine(); // clear buffer
-        sc.nextLine(); // EXTRA: Clean buffer
+        sc.nextLine(); // clears the leftover \n
 
-        boolean found = false;
-
-        for (int i = 0; i < arr.size(); i++) {
-            if (arr.get(i).rollno == roll) {
-                System.out.println("Student found at position " + (i + 1));
-                arr.get(i).display();
+        for (int i = 0; i < studentList.size(); i++) {
+            if (studentList.get(i).getRollNo() == roll) {
+                System.out.println("Student found:");
+                studentList.get(i).display();
 
                 System.out.println("What do you want to update?");
                 System.out.println("1. Name");
                 System.out.println("2. Branch");
                 System.out.println("3. Both");
+                System.out.print("Enter choice: ");
 
                 int choice = sc.nextInt();
-                sc.nextLine(); // clear buffer after choice
-                sc.nextLine(); // EXTRA: Clean buffer
+                sc.nextLine(); // clears the leftover \n
 
-                if (choice == 1) {
-                    System.out.print("Enter new name: ");
-                    arr.get(i).name = sc.nextLine();
-                } 
-                else if (choice == 2) {
-                    System.out.print("Enter new branch: ");
-                    arr.get(i).branch = sc.nextLine();
-                } 
-                else if (choice == 3) {
-                    System.out.print("Enter new name: ");
-                    arr.get(i).name = sc.nextLine();
-                    System.out.print("Enter new branch: ");
-                    arr.get(i).branch = sc.nextLine();
-                } 
-                else {
-                    System.out.println("Invalid choice.");
-                    return;
+                switch (choice) {
+                    case 1:
+                        System.out.print("Enter new name: ");
+                        studentList.get(i).setName(sc.nextLine());
+                        break;
+                    case 2:
+                        System.out.print("Enter new branch: ");
+                        studentList.get(i).setBranch(sc.nextLine());
+                        break;
+                    case 3:
+                        System.out.print("Enter new name: ");
+                        studentList.get(i).setName(sc.nextLine());
+                        System.out.print("Enter new branch: ");
+                        studentList.get(i).setBranch(sc.nextLine());
+                        break;
+                    default:
+                        System.out.println("Invalid choice.");
+                        return;
                 }
 
+                saveToFile(); // persist immediately after updating
                 System.out.println("Student updated successfully!");
-                arr.get(i).display();
-                found = true;
-                break;
+                studentList.get(i).display();
+                return;
             }
         }
-
-        if (!found) {
-            System.out.println("Student not found.");
-        }
+        System.out.println("Student not found.");
     }
 
-    
+    // ─── Main ────────────────────────────────────────────────────────────────────
+
     public static void main(String[] args) {
+
+        loadFromFile(); // load existing data when program starts
+
         int choice;
 
         do {
-            System.out.println("\n< STUDENT MANAGEMENT SYSTEM >"); 
+            System.out.println("\n< STUDENT MANAGEMENT SYSTEM >");
             System.out.println("1. Add student");
             System.out.println("2. Delete student");
             System.out.println("3. Update student");
             System.out.println("4. View students");
             System.out.println("5. Search student");
             System.out.println("6. Exit");
-
             System.out.print("Enter your choice: ");
-            choice = sc.nextInt();
-            sc.nextLine(); // clear buffer
-            sc.nextLine(); // EXTRA: Ensure clean buffer for stable menu loop
 
-            if (choice == 1) {
-                addStudent();
-            } 
-            else if (choice == 2) {
-                deleteStudent();
-            } 
-            else if (choice == 3) {
-                updateStudent();
-            } 
-            else if (choice == 4) {
-                viewStudent();
-            } 
-            else if (choice == 5) {
-                searchStudent();
-            } 
-            else if (choice == 6) {
-                System.out.println("Exiting...");
-            } 
-            else {
-                System.out.println("Invalid choice");
+            choice = sc.nextInt();
+            sc.nextLine(); // clears the leftover \n
+
+            switch (choice) {
+                case 1: addStudent();   break;
+                case 2: deleteStudent(); break;
+                case 3: updateStudent(); break;
+                case 4: viewStudents();  break;
+                case 5: searchStudent(); break;
+                case 6: System.out.println("Exiting. Goodbye!"); break;
+                default: System.out.println("Invalid choice. Try again.");
             }
 
         } while (choice != 6);
+
+        sc.close();
     }
 }
